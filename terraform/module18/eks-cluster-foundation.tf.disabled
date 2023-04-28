@@ -1,0 +1,177 @@
+  source  = "terraform-aws-modules/eks/aws"
+module "eagle" {
+  source  = "terra form stack module"
+
+  argocd_host      = "argocd.${local.common_vars.domain}"
+  argocd_image     = "softrams/argocd:v2.6.3"
+  domain           = local.common_vars.domain
+  write_kubeconfig = false
+  create_group     = false
+  target_revision  = "v6.8.0" 
+  tag_subnets      = false
+  github_token     = jsondecode(module.data.secret-devops).github_personal-access-token
+  additional_github_tokens = {
+    softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
+  }
+  path                 = local.common_vars.path
+  permissions_boundary = local.common_vars.permissions_boundary
+
+  cluster_scaler_enabled    = true
+  istio_enabled             = false
+  kiali_enabled             = false
+  dashboard_enabled         = false
+  aws_lb_controller_enabled = true
+  calico_enabled            = true
+  eagle_config = {
+    enabled = "false"
+  }
+  hosted_zone_id            = "ZXRLJ3TY8X83W"
+
+  cluster_foundation_additional_values = <<-EOF
+    metricsServer:
+      targetRevision: 6.2.15
+    prometheusStack:
+      additionalValues:
+        nodeExporter:
+          enabled: false
+        grafana:
+          ingress:
+            enabled: true
+            ingressClassName: nginx-internal
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              kubernetes.io/tls-acme: "true"
+            hosts:
+              - grafana.${local.common_vars.domain}
+            tls:
+              - hosts:
+                  - grafana.${local.common_vars.domain}
+                secretName: grafana-tls
+        alertmanager:
+          ingress:
+            enabled: true
+            ingressClassName: nginx-internal
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              kubernetes.io/tls-acme: "true"
+            hosts:
+              - alertmanager.${local.common_vars.domain}
+            tls:
+              - hosts:
+                  - alertmanager.${local.common_vars.domain}
+                secretName: alertmanager-tls
+          alertManagerSpec:
+            web:
+              httpConfig:
+                headers:
+                  strictTransportSecurity: "max-age=31536000; includeSubdomains; preload"
+        prometheus:
+          prometheusSpec:
+            resources:
+              limits:
+                cpu: 200m
+                memory: 800Mi
+              requests:
+                cpu: 200m
+                memory: 800Mi
+            web:
+              httpConfig:
+                headers:
+                  strictTransportSecurity: "max-age=31536000; includeSubdomains; preload"
+    certManager:
+      additionalValues:
+        podDnsConfig:
+          nameservers:
+            - "1.1.1.1"
+            - "8.8.8.8"
+    extDNS:
+      aws:
+        zoneType: ""
+    nginx:
+      additionalValues:
+        controller:
+          extraArgs:
+            default-ssl-certificate: "prefect/prefect-tls"
+    nginxInternal:
+      additionalValues:
+        controller:
+          extraArgs:
+            default-ssl-certificate: "prefect/prefect-tls"
+          resources:
+            requests:
+              memory: "128Mi"
+            limits:
+              memory: "128Mi"
+    cloudwatchexporter:
+      enabled: false
+  EOF
+
+  repos = {
+    cluster = {
+      name = "${local.common_vars.project}-${local.common_vars.aws_environment}"
+      repo = "https://github.cms.gov/iddoc/k8s-argocd-apps"
+      path = "./"
+      helm_config = {
+        valuefiles = ["values.yaml", "values-${local.common_vars.aws_environment}.yaml"]
+        values     = <<EOF
+          prefect:
+            roleArn: ${module.prefect-iam.role_arn}
+            apollo:
+              ingress:
+                host: prefectapollo.${local.common_vars.domain}
+                tls:
+                  host: prefectapollo.${local.common_vars.domain}
+            ui:
+              apolloApiUrl: https://prefectapollo.${local.common_vars.domain}/graphql
+              ingress:
+                host: prefectui.${local.common_vars.domain}
+                tls:
+                  host: prefectui.${local.common_vars.domain}
+            postgresql:
+              postgresqlPassword: ${jsondecode(module.data.secret-dba).prefect-password}
+              externalHostname: prefect-dev.cluster-cqmiqbcipd3g.us-east-1.rds.amazonaws.com
+        EOF
+      }
+    }
+  }
+
+  argocd_repository_credentials = [
+    {
+      url    = "https://github.com/softrams-iac"
+      secret = "softramsiac"
+    },
+    {
+      url    = "https://github.cms.gov"
+      secret = "argocd-github"
+    }
+  ]
+
+  ext_dns_role = ({
+    role_name            = "fargate-ext-dns-role"
+    path                 = local.common_vars.path
+    permissions_boundary = local.common_vars.permissions_boundary
+    policy_arn           = null
+    policy_name          = "fargate-ext-dns-policy"
+    policy_description   = "IAM Policy to allow pod to change route53"
+  })
+  cert_manager_role = ({
+    role_name            = "fargate-cert-manager-role"
+    permissions_boundary = local.common_vars.permissions_boundary
+    policy_arn           = null
+    policy_name          = "fargate-cert-manager-policy"
+    path                 = local.common_vars.path
+    policy_description   = "IAM Policy to allow pod to change route53"
+  })
+  aws_lb_controller_role = ({
+    role_name            = "fargate-aws-lb-controller-role"
+    permissions_boundary = local.common_vars.permissions_boundary
+    policy_arn           = null
+    policy_name          = "fargate-aws-lb-controller-policy"
+    path                 = local.common_vars.path
+    policy_description   = "IAM Policy to allow lb controller to create resources"
+  })
+  cluster_autoscaler_role = ({
+    policy_name        = "${local.common_vars.project}-${local.common_vars.aws_environment}-aws-lb-controller-policy"
+    policy_description = "IAM Policy to allow cluster autoscaler to scale"
+  })
+}
