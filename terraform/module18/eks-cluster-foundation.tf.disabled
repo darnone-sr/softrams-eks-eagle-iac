@@ -4,7 +4,7 @@ module "eagle" {
   argocd_host      = "argocd.${local.domain}"
   argocd_image     = "softrams/argocd:v2.6.3"
   domain           = local.domain
-  write_kubeconfig = false
+  //write_kubeconfig = false
   create_group     = false
   target_revision  = "v6.8.0" 
   tag_subnets      = false
@@ -12,8 +12,8 @@ module "eagle" {
   additional_github_tokens = {
     softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
   }
-  path                 = local.common_vars.path
-  permissions_boundary = local.common_vars.permissions_boundary
+  path                 = local.path
+  permissions_boundary = local.permissions_boundary
 
   cluster_scaler_enabled    = true
   istio_enabled             = false

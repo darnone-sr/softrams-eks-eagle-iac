@@ -22,8 +22,8 @@ module "eks" {
     }
   ]
 
-  iam_role_path                 = "${local.iam_role_path}"
-  iam_role_permissions_boundary = ""
+  iam_role_path                 = "${local.path}"
+  iam_role_permissions_boundary = "${local.permissions_boundary}"
 
   self_managed_node_groups = {
     worker_group = {
@@ -33,7 +33,7 @@ module "eks" {
       desired_size               = 2
       max_size                   = 5
       ami_id                     = "ami-0ce0bc9be2a044a29"
-      iam_role_path              = "${local.iam_role_path}"
+      iam_role_path              = "${local.path}"
       iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
       enable_bootstrap_user_data = true
       instance_refresh_enabled   = true
