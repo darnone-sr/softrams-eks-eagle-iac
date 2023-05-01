@@ -15,6 +15,5 @@ locals {
   // Eagle Vars
   domain         = "iactesting.softrams.cloud"
   hosted_zone_id = "Z05906142LVNI5Q6K6QI2"
-
-
+  github_token   = "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"
 }

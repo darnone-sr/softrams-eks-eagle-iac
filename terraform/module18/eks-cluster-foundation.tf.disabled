@@ -1,17 +1,19 @@
 module "eagle" {
-  source  = "terra form stack module"
+  //source = "git@github.com:softrams-iac/terraform-k8s-cluster-foundation.git//?ref=v7.5"
+  source = "../../../terraform-aws-stack-eks"
 
   argocd_host      = "argocd.${local.domain}"
   argocd_image     = "softrams/argocd:v2.6.3"
   domain           = local.domain
   //write_kubeconfig = false
-  create_group     = false
+  //create_group     = false
   target_revision  = "v6.8.0" 
   tag_subnets      = false
-  github_token     = jsondecode(module.data.secret-devops).github_personal-access-token
+  /*  github_token     = jsondecode(module.data.secret-devops).github_personal-access-token
   additional_github_tokens = {
     softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
-  }
+  } */
+  github_token         = local.github_token
   path                 = local.path
   permissions_boundary = local.permissions_boundary
 
@@ -24,7 +26,7 @@ module "eagle" {
   eagle_config = {
     enabled = "false"
   }
-  hosted_zone_id            = "ZXRLJ3TY8X83W"
+  hosted_zone_id            = "${local.hosted_zone_id}"
 
   cluster_foundation_additional_values = <<-EOF
     metricsServer:
@@ -134,7 +136,7 @@ module "eagle" {
     }
   } */
 
-  argocd_repository_credentials = [
+/*   argocd_repository_credentials = [
     {
       url    = "https://github.com/softrams-iac"
       secret = "softramsiac"
@@ -143,34 +145,41 @@ module "eagle" {
       url    = "https://github.cms.gov"
       secret = "argocd-github"
     }
+  ] */
+
+  argocd_repository_credentials = [
+    {
+      url    = "https://github.com/softrams-iac"
+      secret = "argocd-github"
+    }
   ]
 
   ext_dns_role = ({
     role_name            = "fargate-ext-dns-role"
-    path                 = local.common_vars.path
-    permissions_boundary = local.common_vars.permissions_boundary
+    path                 = local.path
+    permissions_boundary = local.permissions_boundary
     policy_arn           = null
     policy_name          = "fargate-ext-dns-policy"
     policy_description   = "IAM Policy to allow pod to change route53"
   })
   cert_manager_role = ({
     role_name            = "fargate-cert-manager-role"
-    permissions_boundary = local.common_vars.permissions_boundary
+    permissions_boundary = local.permissions_boundary
     policy_arn           = null
     policy_name          = "fargate-cert-manager-policy"
-    path                 = local.common_vars.path
+    path                 = local.path
     policy_description   = "IAM Policy to allow pod to change route53"
   })
   aws_lb_controller_role = ({
     role_name            = "fargate-aws-lb-controller-role"
-    permissions_boundary = local.common_vars.permissions_boundary
+    permissions_boundary = local.permissions_boundary
     policy_arn           = null
     policy_name          = "fargate-aws-lb-controller-policy"
-    path                 = local.common_vars.path
+    path                 = local.path
     policy_description   = "IAM Policy to allow lb controller to create resources"
   })
   cluster_autoscaler_role = ({
-    policy_name        = "${local.common_vars.project}-${local.common_vars.aws_environment}-aws-lb-controller-policy"
+    policy_name        = "${local.cluster_name}-aws-lb-controller-policy"
     policy_description = "IAM Policy to allow cluster autoscaler to scale"
   })
 }
