@@ -14,8 +14,10 @@ module "eagle" {
     softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
   } */
   github_token         = local.github_token
+  kms_key_id           = local.kms_key_id
   path                 = local.path
   permissions_boundary = local.permissions_boundary
+
 
   cluster_scaler_enabled    = true
   istio_enabled             = false

@@ -17,7 +17,8 @@ module "eks" {
 
   cluster_encryption_config = [
     {
-      provider_key_arn = module.kms.arn
+      //provider_key_arn = module.kms.arn
+      provider_key_arn = local.provider_key_arn
       resources        = ["secrets"]
     }
   ]

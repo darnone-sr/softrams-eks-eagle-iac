@@ -7,6 +7,7 @@ locals {
   region               = "us-east-1"
   path                 = "/delagatedadmin/developer/"
   permissions_boundary = ""
+  provider_key_arn     = module.kms.arn
 
   // Provider Vars
   run       = true
@@ -16,4 +17,5 @@ locals {
   domain         = "iactesting.softrams.cloud"
   hosted_zone_id = "Z05906142LVNI5Q6K6QI2"
   github_token   = "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"
+  kms_key_id     = module.kms.id
 }
