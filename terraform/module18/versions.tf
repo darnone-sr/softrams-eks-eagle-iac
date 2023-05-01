@@ -37,19 +37,19 @@ provider "k8s" {
   load_config_file       = "false"
   host                   = local.run ? module.eks[0].cluster_endpoint : "https://not_used.local"
   token                  = local.run ? data.aws_eks_cluster_auth.cluster[0].token : "not_used"
-  cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : "not_used"
+  cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : base64decode(local.fake_cert)
 }
 
 provider "kubernetes" {
   host                   = local.run ? module.eks[0].cluster_endpoint : "https://not_used.local"
   token                  = local.run ? data.aws_eks_cluster_auth.cluster[0].token : "not_used"
-  cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : base64decode(local.cert)
+  cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : base64decode(local.fake_cert)
 }
 
 provider "helm" {
   kubernetes {
     host                   = local.run ? module.eks[0].cluster_endpoint : "https://not_used.local"
     token                  = local.run ? data.aws_eks_cluster_auth.cluster[0].token : "not_used"
-    cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : local.cert
+    cluster_ca_certificate = local.run ? base64decode(data.aws_eks_cluster.cluster[0].certificate_authority[0].data) : base64decode(local.fake_cert)
   }
 }
