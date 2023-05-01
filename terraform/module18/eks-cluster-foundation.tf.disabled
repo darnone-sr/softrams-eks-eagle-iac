@@ -1,10 +1,9 @@
-  source  = "terraform-aws-modules/eks/aws"
 module "eagle" {
   source  = "terra form stack module"
 
-  argocd_host      = "argocd.${local.common_vars.domain}"
+  argocd_host      = "argocd.${local.domain}"
   argocd_image     = "softrams/argocd:v2.6.3"
-  domain           = local.common_vars.domain
+  domain           = local.domain
   write_kubeconfig = false
   create_group     = false
   target_revision  = "v6.8.0" 
@@ -42,10 +41,10 @@ module "eagle" {
               cert-manager.io/cluster-issuer: letsencrypt-prod
               kubernetes.io/tls-acme: "true"
             hosts:
-              - grafana.${local.common_vars.domain}
+              - grafana.${local.domain}
             tls:
               - hosts:
-                  - grafana.${local.common_vars.domain}
+                  - grafana.${local.domain}
                 secretName: grafana-tls
         alertmanager:
           ingress:
@@ -55,10 +54,10 @@ module "eagle" {
               cert-manager.io/cluster-issuer: letsencrypt-prod
               kubernetes.io/tls-acme: "true"
             hosts:
-              - alertmanager.${local.common_vars.domain}
+              - alertmanager.${local.domain}
             tls:
               - hosts:
-                  - alertmanager.${local.common_vars.domain}
+                  - alertmanager.${local.domain}
                 secretName: alertmanager-tls
           alertManagerSpec:
             web:
@@ -106,7 +105,7 @@ module "eagle" {
       enabled: false
   EOF
 
-  repos = {
+  /* repos = {
     cluster = {
       name = "${local.common_vars.project}-${local.common_vars.aws_environment}"
       repo = "https://github.cms.gov/iddoc/k8s-argocd-apps"
@@ -118,22 +117,22 @@ module "eagle" {
             roleArn: ${module.prefect-iam.role_arn}
             apollo:
               ingress:
-                host: prefectapollo.${local.common_vars.domain}
+                host: prefectapollo.${local.domain}
                 tls:
-                  host: prefectapollo.${local.common_vars.domain}
+                  host: prefectapollo.${local.domain}
             ui:
-              apolloApiUrl: https://prefectapollo.${local.common_vars.domain}/graphql
+              apolloApiUrl: https://prefectapollo.${local.domain}/graphql
               ingress:
-                host: prefectui.${local.common_vars.domain}
+                host: prefectui.${local.domain}
                 tls:
-                  host: prefectui.${local.common_vars.domain}
+                  host: prefectui.${local.domain}
             postgresql:
               postgresqlPassword: ${jsondecode(module.data.secret-dba).prefect-password}
               externalHostname: prefect-dev.cluster-cqmiqbcipd3g.us-east-1.rds.amazonaws.com
         EOF
       }
     }
-  }
+  } */
 
   argocd_repository_credentials = [
     {

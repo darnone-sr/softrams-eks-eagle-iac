@@ -11,7 +11,7 @@ module "eks" {
   enable_irsa                    = true
   manage_aws_auth_configmap      = false
   create_aws_auth_configmap      = true
-  create_iam_role = true
+  create_iam_role                = true
   
   //hosted_zone_id            = "Z05906142LVNI5Q6K6QI2" //cluster foundation
 
@@ -22,7 +22,7 @@ module "eks" {
     }
   ]
 
-  iam_role_path                 = "/delagatedadmin/developer/"
+  iam_role_path                 = "${local.iam_role_path}"
   iam_role_permissions_boundary = ""
 
   self_managed_node_groups = {
@@ -33,7 +33,7 @@ module "eks" {
       desired_size               = 2
       max_size                   = 5
       ami_id                     = "ami-0ce0bc9be2a044a29"
-      iam_role_path              = "/delagatedadmin/developer/"
+      iam_role_path              = "${local.iam_role_path}"
       iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
       enable_bootstrap_user_data = true
       instance_refresh_enabled   = true
@@ -49,7 +49,7 @@ chmod 0600 /home/audit_user/.ssh/authorized_keys
 echo "audit_user        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 EOF
       tags = {
-        "k8s.io/cluster-autoscaler/enabled"                = "true"
+        "k8s.io/cluster-autoscaler/enabled"                   = "true"
         "k8s.io/cluster-autoscaler/eks-${local.cluster_name}" = "owned"
       }
     }
