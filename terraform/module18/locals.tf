@@ -1,4 +1,5 @@
 locals {
+  // Cluster Vars
   project              = "4i"
   environment          = "init"
   cluster_name         = "${local.project}-${local.environment}"
@@ -16,8 +17,9 @@ locals {
   // Eagle Vars
   domain         = "iactesting.softrams.cloud"
   hosted_zone_id = "Z05906142LVNI5Q6K6QI2"
-  kms_key_id     = module.kms.id
 
+  // EKS Vars
+  kms_key_id                = module.kms.id
   cluster_oidc_issuer_url   = module.eks[0].cluster_oidc_issuer_url
   cluster_oidc_provider_arn = module.eks[0].oidc_provider_arn
   eks_cluster_id            = module.eks[0].cluster_id
@@ -28,6 +30,7 @@ locals {
   eks_managed_node_groups   = module.eks[0].eks_managed_node_groups
   self_managed_node_groups  = module.eks[0].self_managed_node_groups
   fargate_profiles          = module.eks[0].fargate_profiles
+
 
   node_security_group_additional_rules = {
     ingress_self_all = {

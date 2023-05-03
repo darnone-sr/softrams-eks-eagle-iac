@@ -21,10 +21,10 @@ resource "aws_s3_bucket_versioning" "versioning_example" {
 }
 
 resource "aws_dynamodb_table" "terraform_state_lock" {
-  name           = "4i-terraform-state-init-lock"
-  read_capacity  = 1
-  write_capacity = 1
-  hash_key       = "LockID"
+  name                        = "4i-terraform-state-init-lock"
+  read_capacity               = 1
+  write_capacity              = 1
+  hash_key                    = "LockID"
   deletion_protection_enabled = true
 
 
@@ -35,8 +35,8 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
 }
 
 resource "aws_s3_bucket_policy" "terraform_state" {
-  bucket = "${aws_s3_bucket.terraform_state.id}"
-  policy =<<EOF
+  bucket = aws_s3_bucket.terraform_state.id
+  policy = <<EOF
 {
   "Version": "2012-10-17",
   "Id": "RequireEncryption",

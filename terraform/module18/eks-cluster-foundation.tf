@@ -3,23 +3,10 @@ module "eagle" {
   //source = "git@github.com:softrams-iac/terraform-k8s-cluster-foundation.git//?ref=v7.5"
   source = "../../../terraform-aws-stack-eks"
 
-  argocd_host  = "argocd.${local.domain}"
-  argocd_image = "softrams/argocd:v2.6.3"
-  domain       = local.domain
-  //write_kubeconfig = false
-  //create_group     = false
-  target_revision = "v6.8.0"
-  tag_subnets     = false
-  /*  github_token     = jsondecode(module.data.secret-devops).github_personal-access-token
-  additional_github_tokens = {
-    softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
-  } */
-
-  github_token         = jsondecode(module.github_token.secret_map).argocd_github_token
-  kms_key_id           = local.kms_key_id
-  path                 = local.path
-  permissions_boundary = local.permissions_boundary
-
+  // EKS
+  kms_key_id                = local.kms_key_id
+  path                      = local.path
+  permissions_boundary      = local.permissions_boundary
   cluster_name              = local.cluster_name
   manage_aws_auth_configmap = true
   cluster_oidc_issuer_url   = local.cluster_oidc_issuer_url
@@ -33,6 +20,11 @@ module "eagle" {
   self_managed_node_groups  = local.self_managed_node_groups
   fargate_profiles          = local.fargate_profiles
 
+  // ArgoCD Applications
+  argocd_host               = "argocd.${local.domain}"
+  argocd_image              = "softrams/argocd:v2.6.3"
+  target_revision           = "v6.8.0"
+  tag_subnets               = false
   cluster_scaler_enabled    = true
   istio_enabled             = false
   kiali_enabled             = false
@@ -43,6 +35,8 @@ module "eagle" {
     enabled = "false"
   }
   hosted_zone_id = local.hosted_zone_id
+  domain         = local.domain
+  github_token   = jsondecode(module.github_token.secret_map).argocd_github_token
 
   cluster_foundation_additional_values = <<-EOF
     metricsServer:
@@ -122,46 +116,6 @@ module "eagle" {
     cloudwatchexporter:
       enabled: false
   EOF
-
-  /* repos = {
-    cluster = {
-      name = "${local.common_vars.project}-${local.common_vars.aws_environment}"
-      repo = "https://github.cms.gov/iddoc/k8s-argocd-apps"
-      path = "./"
-      helm_config = {
-        valuefiles = ["values.yaml", "values-${local.common_vars.aws_environment}.yaml"]
-        values     = <<EOF
-          prefect:
-            roleArn: ${module.prefect-iam.role_arn}
-            apollo:
-              ingress:
-                host: prefectapollo.${local.domain}
-                tls:
-                  host: prefectapollo.${local.domain}
-            ui:
-              apolloApiUrl: https://prefectapollo.${local.domain}/graphql
-              ingress:
-                host: prefectui.${local.domain}
-                tls:
-                  host: prefectui.${local.domain}
-            postgresql:
-              postgresqlPassword: ${jsondecode(module.data.secret-dba).prefect-password}
-              externalHostname: prefect-dev.cluster-cqmiqbcipd3g.us-east-1.rds.amazonaws.com
-        EOF
-      }
-    }
-  } */
-
-  /*   argocd_repository_credentials = [
-    {
-      url    = "https://github.com/softrams-iac"
-      secret = "softramsiac"
-    },
-    {
-      url    = "https://github.cms.gov"
-      secret = "argocd-github"
-    }
-  ] */
 
   argocd_repository_credentials = [
     {
