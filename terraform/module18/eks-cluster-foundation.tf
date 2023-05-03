@@ -1,7 +1,5 @@
 module "eagle" {
-
-  //source = "git@github.com:softrams-iac/terraform-k8s-cluster-foundation.git//?ref=v7.5"
-  source = "../../../terraform-aws-stack-eks"
+  source = "git@github.com:softrams-iac/terraform-aws-stack-eks.git?ref=IDDOC-49214-49272"
 
   // EKS
   kms_key_id                = local.kms_key_id
