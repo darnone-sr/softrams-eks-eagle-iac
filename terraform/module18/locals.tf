@@ -17,4 +17,43 @@ locals {
   domain         = "iactesting.softrams.cloud"
   hosted_zone_id = "Z05906142LVNI5Q6K6QI2"
   kms_key_id     = module.kms.id
+
+  cluster_oidc_issuer_url   = module.eks[0].cluster_oidc_issuer_url
+  cluster_oidc_provider_arn = module.eks[0].oidc_provider_arn
+  eks_cluster_id            = module.eks[0].cluster_id
+  eks_cluster_endpoint      = module.eks[0].cluster_endpoint
+  cert_auth_data            = data.aws_eks_cluster.cluster[0].certificate_authority[0].data
+  cluster_server            = data.aws_eks_cluster.cluster[0].endpoint
+  cluster_server_token      = data.aws_eks_cluster_auth.cluster[0].token
+  eks_managed_node_groups   = module.eks[0].eks_managed_node_groups
+  self_managed_node_groups  = module.eks[0].self_managed_node_groups
+  fargate_profiles          = module.eks[0].fargate_profiles
+
+  node_security_group_additional_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    ingress_cluster_all = {
+      description                   = "Cluster API to node all ports/protocols"
+      protocol                      = "-1"
+      from_port                     = 0
+      to_port                       = 0
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+  }
 }

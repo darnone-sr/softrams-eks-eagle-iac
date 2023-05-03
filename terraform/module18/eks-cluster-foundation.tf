@@ -1,36 +1,37 @@
 module "eagle" {
+
   //source = "git@github.com:softrams-iac/terraform-k8s-cluster-foundation.git//?ref=v7.5"
   source = "../../../terraform-aws-stack-eks"
 
-  argocd_host      = "argocd.${local.domain}"
-  argocd_image     = "softrams/argocd:v2.6.3"
-  domain           = local.domain
+  argocd_host  = "argocd.${local.domain}"
+  argocd_image = "softrams/argocd:v2.6.3"
+  domain       = local.domain
   //write_kubeconfig = false
   //create_group     = false
-  target_revision  = "v6.8.0" 
-  tag_subnets      = false
+  target_revision = "v6.8.0"
+  tag_subnets     = false
   /*  github_token     = jsondecode(module.data.secret-devops).github_personal-access-token
   additional_github_tokens = {
     softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
   } */
 
-  github_token     = jsondecode(module.github_token.secret_map).argocd_github_token
+  github_token         = jsondecode(module.github_token.secret_map).argocd_github_token
   kms_key_id           = local.kms_key_id
   path                 = local.path
   permissions_boundary = local.permissions_boundary
 
-  cluster_name              = "${local.cluster_name}"
+  cluster_name              = local.cluster_name
   manage_aws_auth_configmap = true
-  cluster_oidc_issuer_url   = module.eks[0].cluster_oidc_issuer_url
-  cluster_oidc_provider_arn = module.eks[0].oidc_provider_arn
-  eks_cluster_id            = module.eks[0].cluster_id
-  eks_cluster_endpoint      = module.eks[0].cluster_endpoint
-  cert_auth_data            = data.aws_eks_cluster.cluster[0].certificate_authority[0].data
-  cluster_server            = data.aws_eks_cluster.cluster[0].endpoint
-  cluster_server_token      = data.aws_eks_cluster_auth.cluster[0].token
-  eks_managed_node_groups   = module.eks[0].eks_managed_node_groups
-  self_managed_node_groups  = module.eks[0].self_managed_node_groups
-  fargate_profiles          = module.eks[0].fargate_profiles
+  cluster_oidc_issuer_url   = local.cluster_oidc_issuer_url
+  cluster_oidc_provider_arn = local.cluster_oidc_provider_arn
+  eks_cluster_id            = local.eks_cluster_id
+  eks_cluster_endpoint      = local.eks_cluster_endpoint
+  cert_auth_data            = local.cert_auth_data
+  cluster_server            = local.cluster_server
+  cluster_server_token      = local.cluster_server_token
+  eks_managed_node_groups   = local.eks_managed_node_groups
+  self_managed_node_groups  = local.self_managed_node_groups
+  fargate_profiles          = local.fargate_profiles
 
   cluster_scaler_enabled    = true
   istio_enabled             = false
@@ -41,7 +42,7 @@ module "eagle" {
   eagle_config = {
     enabled = "false"
   }
-  hosted_zone_id            = "${local.hosted_zone_id}"
+  hosted_zone_id = local.hosted_zone_id
 
   cluster_foundation_additional_values = <<-EOF
     metricsServer:
@@ -151,7 +152,7 @@ module "eagle" {
     }
   } */
 
-/*   argocd_repository_credentials = [
+  /*   argocd_repository_credentials = [
     {
       url    = "https://github.com/softrams-iac"
       secret = "softramsiac"

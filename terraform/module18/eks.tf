@@ -13,33 +13,7 @@ module "eks" {
   create_aws_auth_configmap      = true
   create_iam_role                = true
   
-  node_security_group_additional_rules ={
-    ingress_self_all = {
-      description = "Node to node all ports/protocols"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      self        = true
-    }
-    egress_all = {
-      description      = "Node all egress"
-      protocol         = "-1"
-      from_port        = 0
-      to_port          = 0
-      type             = "egress"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
-    }
-    ingress_cluster_all = {
-      description                   = "Cluster API to node all ports/protocols"
-      protocol                      = "-1"
-      from_port                     = 0
-      to_port                       = 0
-      type                          = "ingress"
-      source_cluster_security_group = true
-    }
-  }
+  node_security_group_additional_rules = local.node_security_group_additional_rules
 
   cluster_encryption_config = [
     {
