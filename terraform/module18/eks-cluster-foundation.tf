@@ -13,11 +13,24 @@ module "eagle" {
   additional_github_tokens = {
     softramsiac = jsondecode(module.data.secret-devops).github_srdevops_token
   } */
-  github_token         = local.github_token
+
+  github_token     = jsondecode(module.github_token.secret_map).argocd_github_token
   kms_key_id           = local.kms_key_id
   path                 = local.path
   permissions_boundary = local.permissions_boundary
 
+  cluster_name              = "${local.cluster_name}"
+  manage_aws_auth_configmap = true
+  cluster_oidc_issuer_url   = module.eks[0].cluster_oidc_issuer_url
+  cluster_oidc_provider_arn = module.eks[0].oidc_provider_arn
+  eks_cluster_id            = module.eks[0].cluster_id
+  eks_cluster_endpoint      = module.eks[0].cluster_endpoint
+  cert_auth_data            = data.aws_eks_cluster.cluster[0].certificate_authority[0].data
+  cluster_server            = data.aws_eks_cluster.cluster[0].endpoint
+  cluster_server_token      = data.aws_eks_cluster_auth.cluster[0].token
+  eks_managed_node_groups   = module.eks[0].eks_managed_node_groups
+  self_managed_node_groups  = module.eks[0].self_managed_node_groups
+  fargate_profiles          = module.eks[0].fargate_profiles
 
   cluster_scaler_enabled    = true
   istio_enabled             = false

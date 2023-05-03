@@ -13,7 +13,33 @@ module "eks" {
   create_aws_auth_configmap      = true
   create_iam_role                = true
   
-  //hosted_zone_id            = "Z05906142LVNI5Q6K6QI2" //cluster foundation
+  node_security_group_additional_rules ={
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    ingress_cluster_all = {
+      description                   = "Cluster API to node all ports/protocols"
+      protocol                      = "-1"
+      from_port                     = 0
+      to_port                       = 0
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+  }
 
   cluster_encryption_config = [
     {
@@ -29,9 +55,9 @@ module "eks" {
   self_managed_node_groups = {
     worker_group = {
       name                       = "worker-group-${local.cluster_name}"
-      instance_type              = "t3.large"
+      instance_type              = "t3.xlarge"
       max_price                  = "0.030"
-      desired_size               = 2
+      desired_size               = 3
       max_size                   = 5
       ami_id                     = "ami-0ce0bc9be2a044a29"
       iam_role_path              = "${local.path}"
